@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-  <title>Buffalo Bono | نظام طلبات محلي</title>
+  <title>Buffalo Bono | أطلب من مطعمك بكل سهولة</title>
   <style>
     * {
       margin: 0;
@@ -36,6 +36,11 @@
       min-height: 100vh;
       box-shadow: 0 0 30px rgba(0,0,0,0.5);
       position: relative;
+    }
+
+    /* تحسينات الحركة */
+    .app-header, .hero-modern, .category-tab, .menu-card, .checkout-drawer, .place-order-btn, .add-to-cart-btn {
+      transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
     }
 
     .app-header {
@@ -80,10 +85,12 @@
       gap: 6px;
       cursor: pointer;
       transition: 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
     .icon-btn:active {
       transform: scale(0.96);
+      background: #2A2A2A;
     }
 
     .hero-modern {
@@ -124,6 +131,11 @@
       transition: 0.2s;
     }
 
+    .btn-primary:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 8px rgba(249, 178, 63, 0.4);
+    }
+
     .category-tabs {
       display: flex;
       overflow-x: auto;
@@ -142,8 +154,8 @@
       font-size: 0.9rem;
       color: #E2D8C8;
       cursor: pointer;
-      transition: all 0.2s;
       flex-shrink: 0;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
 
     .category-tab.active {
@@ -155,15 +167,15 @@
     .menu-items-container {
       padding: 1rem;
       display: none;
-      animation: fade 0.25s ease;
+      animation: fadeSlideUp 0.3s ease;
     }
 
     .menu-items-container.active-category {
       display: block;
     }
 
-    @keyframes fade {
-      from { opacity: 0; transform: translateY(8px);}
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(12px);}
       to { opacity: 1; transform: translateY(0);}
     }
 
@@ -176,7 +188,11 @@
       justify-content: space-between;
       align-items: center;
       border: 1px solid #2C2C2C;
-      transition: 0.1s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .menu-card:active {
+      transform: scale(0.99);
     }
 
     .item-info {
@@ -212,6 +228,12 @@
       cursor: pointer;
       font-size: 0.75rem;
       min-width: 85px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .add-to-cart-btn:active {
+      transform: scale(0.94);
+      background: #e5a32e;
     }
 
     .checkout-overlay {
@@ -220,14 +242,14 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.85);
       backdrop-filter: blur(8px);
       z-index: 200;
       display: flex;
       align-items: flex-end;
       visibility: hidden;
       opacity: 0;
-      transition: 0.2s;
+      transition: 0.25s;
     }
 
     .checkout-overlay.open {
@@ -281,6 +303,13 @@
       text-align: center;
       color: white;
       padding: 6px;
+      -moz-appearance: textfield;
+    }
+
+    .qty-input::-webkit-inner-spin-button,
+    .qty-input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
 
     .del-item-btn {
@@ -307,6 +336,13 @@
       padding: 12px 16px;
       color: white;
       font-family: inherit;
+      transition: 0.15s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #F9B23F;
+      box-shadow: 0 0 0 2px rgba(249, 178, 63, 0.2);
     }
 
     .place-order-btn {
@@ -318,6 +354,12 @@
       font-weight: 800;
       margin-top: 10px;
       cursor: pointer;
+      font-size: 1rem;
+      box-shadow: 0 4px 12px rgba(249, 178, 63, 0.3);
+    }
+
+    .place-order-btn:active {
+      transform: scale(0.98);
     }
 
     .toast-msg {
@@ -335,6 +377,7 @@
       transition: 0.2s;
       pointer-events: none;
       white-space: nowrap;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
 
     .close-drawer {
@@ -359,87 +402,95 @@
       <button class="icon-btn" id="cartDrawerBtn">🛒 <span id="cartCountBadge">0</span></button>
     </div>
   </div>
-
   <div class="hero-modern">
     <h2 id="heroTitle">Welcome to Buffalo Bono</h2>
     <p id="heroDesc">Flame-grilled beef · crispy chicken · buffalo sauces</p>
     <button class="btn-primary" id="viewMenuBtn">🔥 VIEW MENU 🔥</button>
   </div>
-
   <div id="categoryTabs" class="category-tabs"></div>
   <div id="menuDynamicRoot"></div>
-
   <div id="checkoutDrawerOverlay" class="checkout-overlay">
     <div class="checkout-drawer">
       <div class="close-drawer" id="closeDrawerBtn">✕</div>
-      <h3 id="cartDrawerTitle">🧾 Your Receipt</h3>
+      <h3 id="cartDrawerTitle">🧾 فاتورتك</h3>
       <div class="receipt-card">
-        <div id="cartItemsDynamicList">Cart empty</div>
+        <div id="cartItemsDynamicList">السلة فارغة</div>
         <div class="totals" style="margin-top: 12px;">
-          <p><span id="subtotalLabel">Subtotal</span>: <strong id="subtotalVal">0</strong> EGP</p>
-          <p><span id="taxLabel">Tax 10%</span>: <strong id="taxVal">0</strong> EGP</p>
-          <p><span id="deliveryLabel">Delivery</span>: <strong id="deliveryVal">0</strong> EGP</p>
-          <p style="font-size:1.2rem; border-top:1px dashed #F9B23F; padding-top:8px;"><span id="finalLabel">TOTAL</span>: <strong id="finalTotalVal">0</strong> EGP</p>
+          <p><span id="subtotalLabel">المجموع الفرعي</span>: <strong id="subtotalVal">0</strong> EGP</p>
+          <p><span id="taxLabel">الضريبة 10%</span>: <strong id="taxVal">0</strong> EGP</p>
+          <p><span id="deliveryLabel">التوصيل</span>: <strong id="deliveryVal">0</strong> EGP</p>
+          <p style="font-size:1.2rem; border-top:1px dashed #F9B23F; padding-top:8px;"><span id="finalLabel">الإجمالي</span>: <strong id="finalTotalVal">0</strong> EGP</p>
         </div>
       </div>
       <div class="form-section">
-        <h4 id="customerFormTitle">📋 Customer info</h4>
-        <div class="form-group"><label id="nameLabel">Full Name *</label><input type="text" id="custName" placeholder="Ahmed"></div>
-        <div class="form-group"><label id="phoneLabel">Phone *</label><input type="tel" id="custPhone" placeholder="010xxxxxxx"></div>
-        <div class="form-group"><label id="altPhoneLabel">Alt Phone</label><input type="tel" id="altPhone"></div>
-        <div class="form-group"><label id="govLabel">Governorate *</label><select id="governorateSelect"><option value="Qalyubia">Qalyubia</option><option value="Cairo">Cairo</option></select></div>
-        <div class="form-group"><label id="cityLabel">City *</label><select id="citySelect"></select></div>
-        <div class="form-group"><label id="addressLabel">Address + landmark *</label><textarea rows="2" id="fullAddress"></textarea></div>
-        <button class="place-order-btn" id="placeOrderFinalBtn">✅ PLACE ORDER</button>
+        <h4 id="customerFormTitle">📋 بيانات العميل</h4>
+        <div class="form-group"><label id="nameLabel">الاسم بالكامل *</label><input type="text" id="custName" placeholder="أحمد محمد"></div>
+        <div class="form-group"><label id="phoneLabel">رقم الجوال *</label><input type="tel" id="custPhone" placeholder="010xxxxxxx"></div>
+        <div class="form-group"><label id="altPhoneLabel">رقم بديل (اختياري)</label><input type="tel" id="altPhone" placeholder=""></div>
+        <div class="form-group"><label id="govLabel">المحافظة *</label><select id="governorateSelect"><option value="Qalyubia">القليوبية</option><option value="Cairo">القاهرة</option></select></div>
+        <div class="form-group"><label id="cityLabel">المدينة *</label><select id="citySelect"></select></div>
+        <div class="form-group"><label id="addressLabel">العنوان بالكامل + معلم بارز *</label><textarea rows="2" id="fullAddress" placeholder="مثال: شارع المصنع، بجوار مدرسة النور"></textarea></div>
+        <button class="place-order-btn" id="placeOrderFinalBtn">✅ أؤكد طلبي</button>
       </div>
     </div>
   </div>
-  <div id="toastMsg" class="toast-msg">✨ Added</div>
+  <div id="toastMsg" class="toast-msg">✨ تمت الإضافة</div>
 </div>
 
 <script>
-  // ---------- MENU DATA ----------
+  // ---------- MENU DATA (نفس القائمة السابقة) ----------
   const MENU_CATEGORIES = [
-    { id: "beef", nameEn: "🍔 Flame-Grilled Beef Burgers", nameAr: "🍔 برجر لحم بقري مشوي" },
-    { id: "chicken", nameEn: "🍗 Crispy Chicken Burgers", nameAr: "🍗 برجر دجاج مقرمش" },
-    { id: "fries", nameEn: "🍟 Fries & Potato Sides", nameAr: "🍟 المقليات والبطاطس" },
-    { id: "sauces", nameEn: "🥣 Buffalo Sauces", nameAr: "🥣 صوصات بافلو" },
-    { id: "combos", nameEn: "🍔🍟 Full Meal Combos", nameAr: "🍔🍟 الوجبات الكاملة" }
+    { id: "beef", nameEn: "🍔 برجر لحم بقري مشوي", nameAr: "🍔 برجر لحم بقري مشوي" },
+    { id: "chicken", nameEn: "🍗 برجر دجاج مقرمش", nameAr: "🍗 برجر دجاج مقرمش" },
+    { id: "fries", nameEn: "🍟 المقليات والبطاطس", nameAr: "🍟 المقليات والبطاطس" },
+    { id: "sauces", nameEn: "🥣 صوصات بافلو", nameAr: "🥣 صوصات بافلو" },
+    { id: "combos", nameEn: "🍔🍟 الوجبات الكاملة", nameAr: "🍔🍟 الوجبات الكاملة" }
   ];
-
   const MENU_ITEMS = [
-    { id: "b1", categoryId: "beef", nameEn: "Buffalo Classic (Coinsleaf)", nameAr: "بافلو كلاسيك (كوينزليف)", descEn: "100% flame-grilled beef, buffalo sauce", descAr: "لحم بقري مشوي 100%، صوص بافلو", price: 35 },
-    { id: "b2", categoryId: "beef", nameEn: "Texas Spicy Burger", nameAr: "برجر تكساس الحار", descEn: "Spicy jalapeño, pepper jack cheese", descAr: "هلابينو حار، جبنة ببر جاك", price: 25 },
-    { id: "b3", categoryId: "beef", nameEn: "BBQ Bacon Burger", nameAr: "برجر باربيكيو بيكون", descEn: "Crispy bacon, BBQ sauce, cheddar", descAr: "بيكون مقرمش، صوص باربيكيو، شيدر", price: 35 },
-    { id: "b4", categoryId: "beef", nameEn: "Buffalo Classic", nameAr: "بافلو كلاسيك", descEn: "Classic buffalo style beef patty", descAr: "برجر لحم بافلو كلاسيكي", price: 25 },
-    { id: "c1", categoryId: "chicken", nameEn: "Chicken Mushroom", nameAr: "تشيكن مشروم", descEn: "Marinated chicken, sautéed mushrooms", descAr: "دجاج متبل، مشروم مقلي", price: 25 },
-    { id: "c2", categoryId: "chicken", nameEn: "Super Spicy Chicken (Extra Hot)", nameAr: "دجاج حار جدًا", descEn: "Extra hot crispy chicken", descAr: "دجاج مقرمش حار جداً", price: 45 },
-    { id: "c3", categoryId: "chicken", nameEn: "Super Spicy Chicken", nameAr: "دجاج حار", descEn: "Hot crispy chicken fillet", descAr: "فيليه دجاج حار", price: 35 },
-    { id: "c4", categoryId: "chicken", nameEn: "Original Crispy Chicken", nameAr: "كرسبي تشيكن أصلي", descEn: "Classic crispy chicken", descAr: "دجاج مقرمش أصلي", price: 25 },
-    { id: "f1", categoryId: "fries", nameEn: "Regular Fries", nameAr: "بطاطس عادية", descEn: "Golden crispy fries", descAr: "بطاطس ذهبية", price: 20 },
-    { id: "f2", categoryId: "fries", nameEn: "Cheese Fries", nameAr: "بطاطس بالجبنة", descEn: "Melted cheese sauce", descAr: "صوص جبنة", price: 20 },
-    { id: "f3", categoryId: "fries", nameEn: "Bacon Cheese Fries", nameAr: "بطاطس بالجبنة والبيكون", descEn: "Cheese + bacon", descAr: "جبنة وبيكون", price: 20 },
-    { id: "f4", categoryId: "fries", nameEn: "Original Chicken (add-on)", nameAr: "دجاج أوريجنال", descEn: "Chicken strips", descAr: "ستربس دجاج", price: 40 },
-    { id: "f5", categoryId: "fries", nameEn: "BBQ Chicken (add-on)", nameAr: "دجاج باربكيو", descEn: "BBQ glazed chicken", descAr: "دجاج بالباربكيو", price: 40 },
-    { id: "f6", categoryId: "fries", nameEn: "Spicy Chicken (add-on)", nameAr: "دجاج سبايسي", descEn: "Spicy breaded chicken", descAr: "دجاج مقرمش حار", price: 30 },
-    { id: "f7", categoryId: "fries", nameEn: "Chicken Strips", nameAr: "دجاج ستربس", descEn: "Crispy strips", descAr: "ستربس مقرمش", price: 30 },
-    { id: "f8", categoryId: "fries", nameEn: "Chicken Wings", nameAr: "دجاج وينجز", descEn: "Buffalo wings", descAr: "أجنحة بافلو", price: 20 },
-    { id: "f9", categoryId: "fries", nameEn: "Chicken Nuggets", nameAr: "دجاج ناجتس", descEn: "Popcorn nuggets", descAr: "ناجتس", price: 20 },
-    { id: "sau1", categoryId: "sauces", nameEn: "Spicy Buffalo Sauce", nameAr: "صوص بافلو الحار", descEn: "Fiery buffalo", descAr: "بافلو حار", price: 25 },
-    { id: "sau2", categoryId: "sauces", nameEn: "Garlic Sauce (Toum)", nameAr: "صوص الثومية", descEn: "Creamy garlic", descAr: "ثومية كريمية", price: 20 },
-    { id: "sau3", categoryId: "sauces", nameEn: "Rich Cheese Sauce", nameAr: "صوص الجبنة الغني", descEn: "Cheddar dip", descAr: "غمس جبنة", price: 25 },
-    { id: "sau4", categoryId: "sauces", nameEn: "BBQ Sauce", nameAr: "صوص الباربكيو", descEn: "Smoky BBQ", descAr: "باربكيو مدخن", price: 25 },
-    { id: "sau5", categoryId: "sauces", nameEn: "Ranch Sauce", nameAr: "صوص الرانش", descEn: "Herb ranch", descAr: "رانش بالأعشاب", price: 25 },
-    { id: "combo1", categoryId: "combos", nameEn: "Classic Combo (35 EGP)", nameAr: "وجبة الكلاسيك كومبو 35", descEn: "Sandwich + medium fries + drink", descAr: "ساندوتش + بطاطس وسط + مشروب", price: 35 },
-    { id: "combo2", categoryId: "combos", nameEn: "Classic Combo (25 EGP)", nameAr: "وجبة الكلاسيك كومبو 25", descEn: "Sandwich + fries + drink", descAr: "ساندوتش + بطاطس + مشروب", price: 25 },
-    { id: "combo3", categoryId: "combos", nameEn: "Classic Combo (20 EGP)", nameAr: "وجبة الكلاسيك كومبو 20", descEn: "Small meal", descAr: "وجبة صغيرة", price: 20 },
-    { id: "combo4", categoryId: "combos", nameEn: "Deluxe Combo", nameAr: "وجبة البليسك كومبو", descEn: "Premium + cheese fries", descAr: "بريميوم + بطاطس بالجبنة", price: 25 },
-    { id: "combo5", categoryId: "combos", nameEn: "Mega Classic Combo", nameAr: "وجبة الكلاسيك كومبو 45", descEn: "Double patty + large fries", descAr: "دبل برجر + بطاطس كبير", price: 45 }
+    { id: "b1", categoryId: "beef", nameEn: "بافلو كلاسيك (كوينزليف)", nameAr: "بافلو كلاسيك (كوينزليف)", descEn: "لحم بقري مشوي 100%، صوص بافلو", descAr: "لحم بقري مشوي 100%، صوص بافلو", price: 35 },
+    { id: "b2", categoryId: "beef", nameEn: "برجر تكساس الحار", nameAr: "برجر تكساس الحار", descEn: "هلابينو حار، جبنة ببر جاك", descAr: "هلابينو حار، جبنة ببر جاك", price: 25 },
+    { id: "b3", categoryId: "beef", nameEn: "برجر باربيكيو بيكون", nameAr: "برجر باربيكيو بيكون", descEn: "بيكون مقرمش، صوص باربيكيو، شيدر", descAr: "بيكون مقرمش، صوص باربيكيو، شيدر", price: 35 },
+    { id: "b4", categoryId: "beef", nameEn: "بافلو كلاسيك", nameAr: "بافلو كلاسيك", descEn: "برجر لحم بافلو كلاسيكي", descAr: "برجر لحم بافلو كلاسيكي", price: 25 },
+    { id: "c1", categoryId: "chicken", nameEn: "تشيكن مشروم", nameAr: "تشيكن مشروم", descEn: "دجاج متبل، مشروم مقلي", descAr: "دجاج متبل، مشروم مقلي", price: 25 },
+    { id: "c2", categoryId: "chicken", nameEn: "دجاج حار جدًا", nameAr: "دجاج حار جدًا", descEn: "دجاج مقرمش حار جداً", descAr: "دجاج مقرمش حار جداً", price: 45 },
+    { id: "c3", categoryId: "chicken", nameEn: "دجاج حار", nameAr: "دجاج حار", descEn: "فيليه دجاج حار", descAr: "فيليه دجاج حار", price: 35 },
+    { id: "c4", categoryId: "chicken", nameEn: "كرسبي تشيكن أصلي", nameAr: "كرسبي تشيكن أصلي", descEn: "دجاج مقرمش أصلي", descAr: "دجاج مقرمش أصلي", price: 25 },
+    { id: "f1", categoryId: "fries", nameEn: "بطاطس عادية", nameAr: "بطاطس عادية", descEn: "بطاطس ذهبية", descAr: "بطاطس ذهبية", price: 20 },
+    { id: "f2", categoryId: "fries", nameEn: "بطاطس بالجبنة", nameAr: "بطاطس بالجبنة", descEn: "صوص جبنة", descAr: "صوص جبنة", price: 20 },
+    { id: "f3", categoryId: "fries", nameEn: "بطاطس بالجبنة والبيكون", nameAr: "بطاطس بالجبنة والبيكون", descEn: "جبنة وبيكون", descAr: "جبنة وبيكون", price: 20 },
+    { id: "f4", categoryId: "fries", nameEn: "دجاج أوريجنال", nameAr: "دجاج أوريجنال", descEn: "ستربس دجاج", descAr: "ستربس دجاج", price: 40 },
+    { id: "f5", categoryId: "fries", nameEn: "دجاج باربكيو", nameAr: "دجاج باربكيو", descEn: "دجاج بالباربكيو", descAr: "دجاج بالباربكيو", price: 40 },
+    { id: "f6", categoryId: "fries", nameEn: "دجاج سبايسي", nameAr: "دجاج سبايسي", descEn: "دجاج مقرمش حار", descAr: "دجاج مقرمش حار", price: 30 },
+    { id: "f7", categoryId: "fries", nameEn: "دجاج ستربس", nameAr: "دجاج ستربس", descEn: "ستربس مقرمش", descAr: "ستربس مقرمش", price: 30 },
+    { id: "f8", categoryId: "fries", nameEn: "دجاج وينجز", nameAr: "دجاج وينجز", descEn: "أجنحة بافلو", descAr: "أجنحة بافلو", price: 20 },
+    { id: "f9", categoryId: "fries", nameEn: "دجاج ناجتس", nameAr: "دجاج ناجتس", descEn: "ناجتس", descAr: "ناجتس", price: 20 },
+    { id: "sau1", categoryId: "sauces", nameEn: "صوص بافلو الحار", nameAr: "صوص بافلو الحار", descEn: "بافلو حار", descAr: "بافلو حار", price: 25 },
+    { id: "sau2", categoryId: "sauces", nameEn: "صوص الثومية", nameAr: "صوص الثومية", descEn: "ثومية كريمية", descAr: "ثومية كريمية", price: 20 },
+    { id: "sau3", categoryId: "sauces", nameEn: "صوص الجبنة الغني", nameAr: "صوص الجبنة الغني", descEn: "غمس جبنة", descAr: "غمس جبنة", price: 25 },
+    { id: "sau4", categoryId: "sauces", nameEn: "صوص الباربكيو", nameAr: "صوص الباربكيو", descEn: "باربكيو مدخن", descAr: "باربكيو مدخن", price: 25 },
+    { id: "sau5", categoryId: "sauces", nameEn: "صوص الرانش", nameAr: "صوص الرانش", descEn: "رانش بالأعشاب", descAr: "رانش بالأعشاب", price: 25 },
+    { id: "combo1", categoryId: "combos", nameEn: "وجبة الكلاسيك كومبو 35", nameAr: "وجبة الكلاسيك كومبو 35", descEn: "ساندوتش + بطاطس وسط + مشروب", descAr: "ساندوتش + بطاطس وسط + مشروب", price: 35 },
+    { id: "combo2", categoryId: "combos", nameEn: "وجبة الكلاسيك كومبو 25", nameAr: "وجبة الكلاسيك كومبو 25", descEn: "ساندوتش + بطاطس + مشروب", descAr: "ساندوتش + بطاطس + مشروب", price: 25 },
+    { id: "combo3", categoryId: "combos", nameEn: "وجبة الكلاسيك كومبو 20", nameAr: "وجبة الكلاسيك كومبو 20", descEn: "وجبة صغيرة", descAr: "وجبة صغيرة", price: 20 },
+    { id: "combo4", categoryId: "combos", nameEn: "وجبة البليسك كومبو", nameAr: "وجبة البليسك كومبو", descEn: "بريميوم + بطاطس بالجبنة", descAr: "بريميوم + بطاطس بالجبنة", price: 25 },
+    { id: "combo5", categoryId: "combos", nameEn: "وجبة الكلاسيك كومبو 45", nameAr: "وجبة الكلاسيك كومبو 45", descEn: "دبل برجر + بطاطس كبير", descAr: "دبل برجر + بطاطس كبير", price: 45 }
   ];
 
   let cart = [];
-  let currentLang = "en";
+  let currentLang = "ar"; // عربي افتراضي
   let activeCategoryId = "beef";
+  
+  let nextOrderNumber = parseInt(localStorage.getItem("nextOrderNumber")) || 1000;
+  function getNextOrderNumber() {
+    let num = nextOrderNumber;
+    nextOrderNumber++;
+    localStorage.setItem("nextOrderNumber", nextOrderNumber);
+    return num;
+  }
+
+  // إعدادات تيليجرام (تم تحديثها)
+  const TELEGRAM_BOT_TOKEN = "8748571642:AAGMmoWmXH3ewRPow5igyacYkamBpeJ3jd0";
+  const TELEGRAM_CHAT_ID = "987968411";
 
   function getDeliveryFee() {
     const gov = document.getElementById("governorateSelect")?.value;
@@ -468,29 +519,18 @@
     
     const cartContainer = document.getElementById("cartItemsDynamicList");
     if (!cartContainer) return;
-    
     if (cart.length === 0) {
-      cartContainer.innerHTML = `<div style="text-align:center; padding:20px;">🛒 ${currentLang === "en" ? "Cart is empty" : "السلة فارغة"}</div>`;
+      cartContainer.innerHTML = `<div style="text-align:center; padding:20px;">🛒 السلة فارغة</div>`;
       return;
     }
-    
     let html = "";
     cart.forEach(cartItem => {
       const prod = MENU_ITEMS.find(p => p.id === cartItem.id);
       if (!prod) return;
-      const name = currentLang === "en" ? prod.nameEn : prod.nameAr;
-      html += `
-        <div class="cart-item-row" data-id="${prod.id}">
-          <div><strong>${name}</strong><br><span style="font-size:12px;">${prod.price} EGP</span></div>
-          <div class="item-actions">
-            <input type="number" min="1" value="${cartItem.quantity}" class="qty-input" data-id="${prod.id}" style="width:65px;">
-            <button class="del-item-btn" data-id="${prod.id}">🗑️</button>
-          </div>
-        </div>
-      `;
+      const name = prod.nameAr; // استخدام العربي دائمًا
+      html += `<div class="cart-item-row" data-id="${prod.id}"><div><strong>${name}</strong><br><span style="font-size:12px;">${prod.price} EGP</span></div><div class="item-actions"><input type="number" min="1" max="100" value="${cartItem.quantity}" class="qty-input" data-id="${prod.id}" style="width:70px;"><button class="del-item-btn" data-id="${prod.id}">🗑️</button></div></div>`;
     });
     cartContainer.innerHTML = html;
-    
     document.querySelectorAll(".qty-input").forEach(input => {
       input.removeEventListener("input", handleQuantityInput);
       input.addEventListener("input", handleQuantityInput);
@@ -506,6 +546,7 @@
     const productId = input.getAttribute("data-id");
     let newQty = parseInt(input.value);
     if (isNaN(newQty) || newQty < 1) newQty = 1;
+    if (newQty > 100) newQty = 100;
     const cartItem = cart.find(item => item.id === productId);
     if (cartItem) {
       cartItem.quantity = newQty;
@@ -518,7 +559,7 @@
     const productId = btn.getAttribute("data-id");
     cart = cart.filter(item => item.id !== productId);
     updateAllCartUI();
-    showToast(currentLang === "en" ? "Removed" : "تم الحذف");
+    showToast("تم الحذف");
   }
   
   function addToCart(productId) {
@@ -529,25 +570,17 @@
       cart.push({ id: productId, quantity: 1 });
     }
     updateAllCartUI();
-    showToast(currentLang === "en" ? "✓ Added to cart" : "✓ تمت الإضافة");
+    showToast("✓ تمت الإضافة");
     const btn = document.querySelector(`.add-to-cart-btn[data-id="${productId}"]`);
-    if (btn) {
-      btn.style.transform = "scale(0.92)";
-      setTimeout(() => btn.style.transform = "", 150);
-    }
+    if (btn) { btn.style.transform = "scale(0.92)"; setTimeout(() => btn.style.transform = "", 150); }
   }
   
   function updateCities() {
     const gov = document.getElementById("governorateSelect").value;
     const citySelect = document.getElementById("citySelect");
-    let options = gov === "Qalyubia" ? ["Al Qanater", "Basous", "Ezbet Al Ahali"] : ["Nasr City", "El Rehab", "New Cairo"];
+    let options = gov === "Qalyubia" ? ["الخصوص", "بنها", "شبرا الخيمة"] : ["مدينة نصر", "الرحاب", "القاهرة الجديدة"];
     citySelect.innerHTML = "";
-    options.forEach(opt => {
-      const option = document.createElement("option");
-      option.value = opt;
-      option.textContent = opt;
-      citySelect.appendChild(option);
-    });
+    options.forEach(opt => { const option = document.createElement("option"); option.value = opt; option.textContent = opt; citySelect.appendChild(option); });
     updateAllCartUI();
   }
   
@@ -557,51 +590,41 @@
     MENU_CATEGORIES.forEach(cat => {
       const btn = document.createElement("button");
       btn.className = `category-tab ${activeCategoryId === cat.id ? 'active' : ''}`;
-      btn.innerText = currentLang === "en" ? cat.nameEn : cat.nameAr;
-      btn.addEventListener("click", () => {
-        activeCategoryId = cat.id;
-        renderCategoriesAndMenu();
-      });
+      btn.innerText = cat.nameAr;
+      btn.addEventListener("click", () => { activeCategoryId = cat.id; renderCategoriesAndMenu(); });
       tabsContainer.appendChild(btn);
     });
-    
     const root = document.getElementById("menuDynamicRoot");
     root.innerHTML = "";
     const containerDiv = document.createElement("div");
     containerDiv.className = "menu-items-container active-category";
     const items = MENU_ITEMS.filter(item => item.categoryId === activeCategoryId);
-    if (items.length === 0) {
-      containerDiv.innerHTML = `<div style="text-align:center; padding:2rem;">${currentLang === "en" ? "No items" : "لا توجد أصناف"}</div>`;
-    } else {
+    if (items.length === 0) { containerDiv.innerHTML = `<div style="text-align:center; padding:2rem;">لا توجد أصناف</div>`; }
+    else {
       items.forEach(item => {
-        const name = currentLang === "en" ? item.nameEn : item.nameAr;
-        const desc = currentLang === "en" ? item.descEn : item.descAr;
         const card = document.createElement("div");
         card.className = "menu-card";
         card.innerHTML = `
           <div class="item-info">
-            <div class="item-name">${name}</div>
-            <div class="item-desc">${desc}</div>
+            <div class="item-name">${item.nameAr}</div>
+            <div class="item-desc">${item.descAr}</div>
             <div class="item-price">${item.price} EGP</div>
           </div>
-          <button class="add-to-cart-btn" data-id="${item.id}">+ ${currentLang === "en" ? "Add" : "أضف"}</button>
+          <button class="add-to-cart-btn" data-id="${item.id}">+ أضف</button>
         `;
         containerDiv.appendChild(card);
       });
     }
     root.appendChild(containerDiv);
-    
     document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
       btn.removeEventListener("click", handleAddClick);
       btn.addEventListener("click", handleAddClick);
     });
   }
   
-  function handleAddClick(e) {
-    const id = e.currentTarget.getAttribute("data-id");
-    addToCart(id);
-  }
+  function handleAddClick(e) { addToCart(e.currentTarget.getAttribute("data-id")); }
   
+  // تبسيط اللغة: فقط عربي
   function setLanguage(lang) {
     currentLang = lang;
     const isAr = lang === "ar";
@@ -611,14 +634,14 @@
     document.getElementById("heroDesc").innerText = isAr ? "لحم مشوي على اللهب · دجاج مقرمش · صوصات بافلو" : "Flame-grilled beef · crispy chicken · buffalo sauces";
     document.getElementById("viewMenuBtn").innerHTML = isAr ? "🔥 عرض القائمة 🔥" : "🔥 VIEW MENU 🔥";
     document.getElementById("cartDrawerTitle").innerText = isAr ? "🧾 فاتورتك" : "🧾 Your Receipt";
-    document.getElementById("customerFormTitle").innerText = isAr ? "📋 بيانات العميل" : "📋 Customer info";
-    document.getElementById("nameLabel").innerText = isAr ? "الاسم بالكامل *" : "Full Name *";
-    document.getElementById("phoneLabel").innerText = isAr ? "رقم الهاتف *" : "Phone *";
-    document.getElementById("altPhoneLabel").innerText = isAr ? "هاتف بديل" : "Alt Phone";
-    document.getElementById("govLabel").innerText = isAr ? "المحافظة *" : "Governorate *";
-    document.getElementById("cityLabel").innerText = isAr ? "المدينة *" : "City *";
-    document.getElementById("addressLabel").innerHTML = isAr ? "العنوان + معلم بارز *" : "Address + landmark *";
-    document.getElementById("placeOrderFinalBtn").innerHTML = isAr ? "✅ تأكيد الطلب" : "✅ PLACE ORDER";
+    document.getElementById("customerFormTitle").innerHTML = isAr ? "📋 بيانات العميل" : "📋 Customer info";
+    document.getElementById("nameLabel").innerHTML = isAr ? "الاسم بالكامل *" : "Full Name *";
+    document.getElementById("phoneLabel").innerHTML = isAr ? "رقم الجوال *" : "Phone *";
+    document.getElementById("altPhoneLabel").innerHTML = isAr ? "رقم بديل (اختياري)" : "Alt Phone (Optional)";
+    document.getElementById("govLabel").innerHTML = isAr ? "المحافظة *" : "Governorate *";
+    document.getElementById("cityLabel").innerHTML = isAr ? "المدينة *" : "City *";
+    document.getElementById("addressLabel").innerHTML = isAr ? "العنوان بالكامل + معلم بارز *" : "Address + landmark *";
+    document.getElementById("placeOrderFinalBtn").innerHTML = isAr ? "✅ أؤكد طلبي" : "✅ CONFIRM ORDER";
     document.getElementById("langToggleBtn").innerHTML = isAr ? "🇬🇧 EN" : "🇸🇦 AR";
     renderCategoriesAndMenu();
     updateAllCartUI();
@@ -628,23 +651,24 @@
     const toast = document.getElementById("toastMsg");
     toast.innerText = msg;
     toast.style.opacity = "1";
-    setTimeout(() => toast.style.opacity = "0", 1500);
+    setTimeout(() => toast.style.opacity = "0", 1800);
   }
   
-  // ========== دالة الطلب (محلية فقط، بدون إرسال خارجي) ==========
-  function placeOrderFinal() {
+  async function placeOrderFinal() {
     const name = document.getElementById("custName").value.trim();
     const phone = document.getElementById("custPhone").value.trim();
-    const gov = document.getElementById("governorateSelect").value;
+    const altPhone = document.getElementById("altPhone").value.trim();
+    const govSelect = document.getElementById("governorateSelect");
+    const gov = govSelect.options[govSelect.selectedIndex]?.text || govSelect.value;
     const city = document.getElementById("citySelect").value;
     const address = document.getElementById("fullAddress").value.trim();
     
     if (!name || !phone || !gov || !city || !address) {
-      alert(currentLang === "en" ? "❌ Please fill all required fields" : "❌ الرجاء ملء جميع الحقول المطلوبة");
+      alert("❌ الرجاء ملء جميع الحقول المطلوبة");
       return;
     }
     if (cart.length === 0) {
-      alert(currentLang === "en" ? "🛒 Cart is empty!" : "🛒 السلة فارغة!");
+      alert("🛒 السلة فارغة! أضف بعض الأصناف.");
       return;
     }
     
@@ -652,47 +676,64 @@
     cart.forEach(cItem => {
       const prod = MENU_ITEMS.find(p => p.id === cItem.id);
       if (prod) {
-        const nameItem = currentLang === "en" ? prod.nameEn : prod.nameAr;
-        itemsList += `${nameItem} x${cItem.quantity} = ${prod.price * cItem.quantity} EGP\n`;
+        itemsList += `${prod.nameAr} x${cItem.quantity} = ${prod.price * cItem.quantity} EGP\n`;
       }
     });
     const subt = computeSubtotal();
     const taxAmt = subt * 0.1;
     const deliv = getDeliveryFee();
     const totalFinal = subt + taxAmt + deliv;
+    const orderNumber = getNextOrderNumber();
     
-    const receiptMsg = `🍔 BURGER BONO ORDER 🧾
-${currentLang === "en" ? "Customer" : "العميل"}: ${name}
-📞 ${phone}
-📍 ${address}, ${city} - ${gov}
+    let altPhoneLine = "";
+    if (altPhone) altPhoneLine = `📞 رقم بديل: ${altPhone}\n`;
+    
+    const receiptMsg = `🍔 طلب جديد من BONO 🍔
+🧾 رقم الطلب: #${orderNumber}
+
+👤 الاسم: ${name}
+📞 رقم الجوال: ${phone}
+${altPhoneLine}📍 العنوان: ${address}, ${city} - ${gov}
 --------------------------------
 ${itemsList}
-Subtotal: ${subt} EGP
-Tax 10%: ${taxAmt} EGP
-Delivery: ${deliv} EGP
-TOTAL: ${totalFinal} EGP
-${currentLang === "en" ? "Thank you!" : "شكراً لكم!"}`;
+💰 المجموع الفرعي: ${subt} EGP
+🧾 الضريبة 10%: ${taxAmt} EGP
+🚚 التوصيل: ${deliv} EGP
+💵 الإجمالي: ${totalFinal} EGP
+
+شكراً لكم!`;
     
-    alert(receiptMsg);
-    
-    // تفريغ السلة والحقول بعد الطلب
-    cart = [];
-    updateAllCartUI();
-    document.getElementById("custName").value = "";
-    document.getElementById("custPhone").value = "";
-    document.getElementById("altPhone").value = "";
-    document.getElementById("fullAddress").value = "";
-    closeDrawer();
-    showToast(currentLang === "en" ? "Order placed! 🎉" : "تم الطلب بنجاح!");
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: receiptMsg })
+      });
+      const data = await response.json();
+      if (data.ok) {
+        alert(`✅ تم إرسال الطلب إلى المطعم! رقم طلبك: ${orderNumber}`);
+        cart = [];
+        updateAllCartUI();
+        document.getElementById("custName").value = "";
+        document.getElementById("custPhone").value = "";
+        document.getElementById("altPhone").value = "";
+        document.getElementById("fullAddress").value = "";
+        closeDrawer();
+        showToast("تم إرسال طلبك بنجاح!");
+      } else {
+        console.error("Telegram error:", data);
+        alert("❌ فشل إرسال الطلب. يرجى المحاولة مرة أخرى.");
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+      alert("❌ خطأ في الشبكة. تأكد من اتصالك بالإنترنت.");
+    }
   }
   
   function openDrawer() { document.getElementById("checkoutDrawerOverlay").classList.add("open"); }
   function closeDrawer() { document.getElementById("checkoutDrawerOverlay").classList.remove("open"); }
   
-  // Event listeners
-  document.getElementById("viewMenuBtn").addEventListener("click", () => {
-    document.getElementById("categoryTabs").scrollIntoView({ behavior: "smooth" });
-  });
+  document.getElementById("viewMenuBtn").addEventListener("click", () => { document.getElementById("categoryTabs").scrollIntoView({ behavior: "smooth" }); });
   document.getElementById("cartDrawerBtn").addEventListener("click", openDrawer);
   document.getElementById("closeDrawerBtn").addEventListener("click", closeDrawer);
   document.getElementById("langToggleBtn").addEventListener("click", () => setLanguage(currentLang === "en" ? "ar" : "en"));
@@ -701,10 +742,9 @@ ${currentLang === "en" ? "Thank you!" : "شكراً لكم!"}`;
   document.getElementById("placeOrderFinalBtn").addEventListener("click", placeOrderFinal);
   window.addEventListener("click", (e) => { if (e.target === document.getElementById("checkoutDrawerOverlay")) closeDrawer(); });
   
-  // Initialization
   updateCities();
-  setLanguage("en");
+  setLanguage("ar"); // البدء بالعربي
   updateAllCartUI();
 </script>
 </body>
-  </html>
+</html>
